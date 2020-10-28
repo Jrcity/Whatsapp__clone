@@ -22,10 +22,11 @@
 .chat__body {
   flex: 1;
   background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
-  background-repeat: repeat;
+  background-repeat: no-repeat;
   background-position: center;
   padding: 30px;
   overflow: auto;
+  object-fit: contain;
 }
 .chat__message {
   position: relative;
@@ -34,7 +35,7 @@
   background-color: #fff;
   border-radius: 10px;
   width: fit-content;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
 }
 .chat__name {
   position: absolute;

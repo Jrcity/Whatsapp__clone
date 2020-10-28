@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import firebase from 'firebase';
+import { useParams } from 'react-router-dom';
 import { Avatar, IconButton } from '@material-ui/core';
-
-import './Chat.css';
 import {
   AttachFile,
   InsertEmoticon,
@@ -11,24 +11,50 @@ import {
   Send,
 } from '@material-ui/icons';
 
+//my imports
+import db from '../../firebase';
+import './Chat.css';
+import { useStateValue } from '../../StateProvider';
+
 const Chat = () => {
-  const [seed, setSeed] = React.useState('');
-  const [input, setInput] = React.useState('');
-  React.useEffect(() => {
-    setSeed(Math.floor(Math.random() * 7000));
-  }, []);
+  const [{ user }] = useStateValue();
+  const { roomId } = useParams();
+  const [input, setInput] = useState('');
+  const [roomName, setRoomName] = useState('');
+  const [messages, setMessages] = useState([]);
+  useEffect(() => {
+    if (roomId) {
+      db.collection('rooms')
+        .doc(roomId)
+        .onSnapshot((snapshot) => setRoomName(snapshot.data().name));
+
+      db.collection('rooms')
+        .doc(roomId)
+        .collection('messages')
+        .orderBy('timestamp', 'asc')
+        .onSnapshot((snapshot) =>
+          setMessages(snapshot.docs.map((doc) => doc.data())),
+        );
+    }
+  }, [roomId]);
 
   const sendMessage = (e) => {
     e.preventDefault();
-    console.log(`You typed: ${input}`);
+    db.collection('rooms').doc(roomId).collection('messages').add({
+      message: input,
+      name: user.user.displayName,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    });
     setInput('');
   };
   return (
     <div className="chat">
       <div className="chat__header">
-        <Avatar src={`https://avatars.dicebear.com/api/human/${seed}.svg`} />
+        <Avatar
+          src={`https://avatars.dicebear.com/api/initials/${roomName}.svg`}
+        />
         <div className="chat__headerInfo">
-          <h3>Room name</h3>
+          <h3>{roomName}</h3>
           <p>Last seen at ...</p>
         </div>
         <div className="chat__headerRight">
@@ -44,17 +70,24 @@ const Chat = () => {
         </div>
       </div>
       <div className="chat__body">
-        <p className={`chat__message ${true && 'chat__receiver'}`}>
-          <span className="chat__name">jrcity</span>Hey peeps!
-          <span className="chat__timestamp">12:32pm</span>
-        </p>
-        <p className="chat__message">Hey peeps!</p>
+        {messages
+          ? messages.map(({ message, name, timestamp }) => (
+              <p className={`chat__message ${true && 'chat__receiver'}`}>
+                <span className="chat__name">{name}</span>
+                {message}
+                <span className="chat__timestamp">
+                  {new Date(timestamp.toDate()).toUTCString()}
+                </span>
+              </p>
+            ))
+          : null}
+        {/* <p className="chat__message">Hey peeps!</p> */}
       </div>
       <div className="chat__footer">
         <IconButton>
           <InsertEmoticon />
         </IconButton>
-        <form>
+        <form onSubmit={(e) => sendMessage(e)}>
           <input
             onChange={(e) => setInput(e.target.value)}
             value={input}
