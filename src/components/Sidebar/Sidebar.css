@@ -32,7 +32,8 @@
   color: gray;
   padding: 10px;
 }
-.sidebar__headerRight {
+.sidebar__headerRight,
+.sidebar__headerLeft {
   display: flex;
   align-items: center;
   justify-content: space-between;

@@ -42,7 +42,7 @@ const Chat = () => {
     e.preventDefault();
     db.collection('rooms').doc(roomId).collection('messages').add({
       message: input,
-      name: user.user.displayName,
+      name: user.displayName,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     });
     setInput('');
@@ -55,7 +55,12 @@ const Chat = () => {
         />
         <div className="chat__headerInfo">
           <h3>{roomName}</h3>
-          <p>Last seen at ...</p>
+          <p>
+            last seen
+            {new Date(
+              messages[messages.length - 1]?.timestamp?.toDate(),
+            ).toUTCString()}
+          </p>
         </div>
         <div className="chat__headerRight">
           <IconButton>
@@ -70,17 +75,20 @@ const Chat = () => {
         </div>
       </div>
       <div className="chat__body">
-        {messages
-          ? messages.map(({ message, name, timestamp }) => (
-              <p className={`chat__message ${true && 'chat__receiver'}`}>
-                <span className="chat__name">{name}</span>
-                {message}
-                <span className="chat__timestamp">
-                  {new Date(timestamp.toDate()).toUTCString()}
-                </span>
-              </p>
-            ))
-          : null}
+        {messages.map(({ message, name, timestamp, id }) => (
+          <p
+            key={id}
+            className={`chat__message ${
+              name === user.displayName && 'chat__receiver'
+            }`}
+          >
+            <span className="chat__name">{name}</span>
+            {message}
+            <span className="chat__timestamp">
+              {new Date(timestamp?.toDate()).toUTCString()}
+            </span>
+          </p>
+        ))}
         {/* <p className="chat__message">Hey peeps!</p> */}
       </div>
       <div className="chat__footer">
@@ -93,7 +101,7 @@ const Chat = () => {
             value={input}
             placeholder="Type a message"
             type="text"
-          ></input>
+          />
           <IconButton onClick={(e) => sendMessage(e)}>
             <Send />
           </IconButton>

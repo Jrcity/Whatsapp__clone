@@ -8,6 +8,9 @@ import SideBarChat from './SidebarChat/SideBarChat';
 import { useStateValue } from '../../StateProvider';
 
 const Sidebar = () => {
+  const [{ user }] = useStateValue();
+  const { photoURL, displayName } = user;
+
   const [rooms, setRooms] = useState('');
   useEffect(() => {
     const unsubscribe = db.collection('rooms').onSnapshot((snapshot) => {
@@ -18,14 +21,16 @@ const Sidebar = () => {
       unsubscribe();
     };
   }, [rooms]);
-  const [user] = useStateValue();
-  const { photoURL } = user.user;
+
   return (
     <div className="sidebar">
       <div className="sidebar__header">
-        <IconButton>
-          <Avatar src={photoURL} />
-        </IconButton>
+        <div className="sidebar__headerLeft">
+          <IconButton>
+            <Avatar src={photoURL} />
+          </IconButton>
+          <span>{displayName}</span>
+        </div>
         <div className="sidebar__headerRight">
           <IconButton>
             <DonutLarge />
